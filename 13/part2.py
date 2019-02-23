@@ -12,14 +12,14 @@ def read_file(args):
 	return file.readlines()
 
 def process_file(file):
-	intersections = {}
 	carts = find_carts(file)
-
-	while(True):
-		v = is_intersecting(carts)
-		if(v != False):
-			return v[::-1]
+	
+	while(len(carts) != 1):
+		carts.sort(key = lambda x:(x[0], x[1]))		
 		move_carts(file, carts)
+		carts = [x for x in carts if x[4] == 0]
+
+	return carts[0][1], carts[0][0]
 
 def is_intersecting(carts):
 	for i in range(len(carts)):
@@ -27,22 +27,25 @@ def is_intersecting(carts):
 			pos1 = carts[i][0:2]
 			pos2 = carts[j][0:2]
 			if(pos1 == pos2):
-				return pos1
-	return False
+				carts[i][4] = 1
+				carts[j][4] = 1
 
 def find_carts(field):
-	# y,x,orientation,rotate
+	# y, x, orientation, rotate, dead
 	carts = []
 	symbols = {'>': 1, '<': -1, '^': 1j, 'v': -1j}
 	for y in range(len(field)):
-		for x in range(len(field[0])):
+		for x in range(len(field[y])):
 			elem = field[y][x]
 			if(elem in symbols.keys()):
-				carts.append([y, x, symbols[elem], 0])
+				carts.append([y, x, symbols[elem], 0, 0])
 	return carts
 
 def move_carts(field, carts):
 	for c in carts:
+		# cart crashed
+		if(c[4] == 1):
+			pass
 
 		orient = c[2]
 		if(orient == -1):
@@ -70,6 +73,7 @@ def move_carts(field, carts):
 			c[2] = c[2] * ((1j) * (-1j) ** c[3])
 			c[3] = (c[3] + 1) % 3
 		
+		is_intersecting(carts)
 		
 def main():
 	args = receive_input()
